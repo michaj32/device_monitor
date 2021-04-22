@@ -7,9 +7,9 @@ class DeviceMonitor:
             config ([dict], optional): [Dictionary providing information about devices. For every device it should have its ID and information about accessing device, For more information lookup AbstractReader and its derivatives]. Defaults to None.
 
         Returns:
-            [None]
+            [self]
         """
-        return None
+        pass
 
     def start(self, time_interval=1):
         """[summary]
