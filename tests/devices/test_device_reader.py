@@ -31,6 +31,12 @@ class TestDeviceReader:
                 file_read.pop(key, None)
         assert file_read == reader.read()
 
+    def test_couldnt_read_value(self, config):
+        config['measures'].append('mock')
+        reader = create_reader(config=config)
+        with pytest.raises(ValueError):
+            reader.read()
+
     def test_wrong_file_path(self, config):
         config['file_path'] = ""
         with pytest.raises(FileNotFoundError):
@@ -41,6 +47,11 @@ class TestDeviceReader:
 
     def test_empty_measures(self, config):
         config['measures'] = []
+        with pytest.raises(ValueError):
+            reader = create_reader(config=config)
+            
+    def test_invalid_measures(self, config):
+        config['measures'] = {}
         with pytest.raises(ValueError):
             reader = create_reader(config=config)
 
