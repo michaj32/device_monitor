@@ -1,3 +1,8 @@
+import threading as th
+from time import sleep
+from devices.device_reader import create_reader, AbstractReader
+
+
 class DeviceMonitor:
 
     def __init__(self, config=None):
@@ -9,7 +14,12 @@ class DeviceMonitor:
         Returns:
             [self]
         """
-        pass
+        self.lock = th.Lock()
+        self._status = None
+        self._devices = []
+        self.stopping_event = th.Event()
+        for device in config['devices']:
+            self.devices = create_reader(device)
 
     def start(self, time_interval=1):
         """[summary]
@@ -20,7 +30,9 @@ class DeviceMonitor:
         Returns:
             [None]:
         """
-        return None
+        self.thread = th.Thread(target=self._update,
+                                name="DeviceMonitor", args=[time_interval])
+        self.thread.start()
 
     def stop(self):
         """[Stop monitoring devices]
@@ -28,7 +40,8 @@ class DeviceMonitor:
         Returns:
             [None]
         """
-        return None
+        self.stopping_event.set()
+        self.thread.join()
 
     def get_statuses(self):
         """[Retrieve status for every connected device]
@@ -36,7 +49,8 @@ class DeviceMonitor:
         Returns:
             [dict]: [Status for every connected device]
         """
-        return self.status
+        with self.lock:
+            return self.status
 
     def _update(self, interval):
         """[Threaded method periodically updating statuses]
@@ -47,7 +61,13 @@ class DeviceMonitor:
         Returns:
             [None]:
         """
-        return None
+        while not self.stopping_event.isSet():
+            temp_dict = {}
+            for device in self.devices:
+                temp_dict[device.id] = device.read()
+                with self.lock:
+                    self.status = temp_dict
+            sleep(interval)
 
     @property
     def status(self):
@@ -68,7 +88,8 @@ class DeviceMonitor:
         Returns:
             [None]
         """
-        return None
+        if isinstance(value, dict):
+            self._status = value
 
     @property
     def devices(self):
@@ -90,4 +111,8 @@ class DeviceMonitor:
         Returns:
             [None]
         """
-        return None
+        if isinstance(value, AbstractReader):
+            self._devices.append(value)
+        else:
+            raise ValueError(
+                "Wrong type of device reader passed to DeviceMonitor")
