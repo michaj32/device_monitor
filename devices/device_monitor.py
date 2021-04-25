@@ -113,6 +113,4 @@ class DeviceMonitor:
         """
         if isinstance(value, AbstractReader):
             self._devices.append(value)
-        else:
-            raise ValueError(
-                "Wrong type of device reader passed to DeviceMonitor")
+

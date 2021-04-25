@@ -24,7 +24,6 @@ class AbstractReader:
         Returns:
             [dict]: [read measures and its values]
         """
-        return self.measurements
 
     @property
     def id(self):
